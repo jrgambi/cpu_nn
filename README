@@ -6,7 +6,7 @@ ARMv8-a running in 32-bit mode is what has been implemmented.
 The main goal of this project is for me to learn.  Also, to generate a properly weighted Neural Network that can be predict the change to the cpu's registers for a subset of any given instruction.  That subset currently excludes Load and Store single value or memory block.  
 
 There are three parts of code, the neural network, the cpu stuff, and the main (cpu_nn.c) that uses the first two parts.  
-The neural network should be able to bhandle multiple different algorithmns with hopefully just a minor amount of refactoring, but currently only has gradient descent (or some bastardization of it) implemented.
+The neural network should be able to handle multiple different algorithmns with hopefully just a minor amount of refactoring, but currently only has gradient descent (or some bastardization of it) implemented.
 The cpu portion handles data generation; starting register values, instruction to execute, generates a function with the given instruction and output location to write to, and finally excutes that function.
 The main (cpu_nn.c) contains a barebones implemtation to generate data and train a neural network.  
 
