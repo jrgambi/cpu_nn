@@ -50,4 +50,9 @@ main (int argc, char *argv[])
 	}
 
 	print_perceptron_layer (pl2);
+
+	for (int i = 0; i < 2; i++)
+	{
+		printf ("target[%d] %.9g\n", i, targets[i]);
+	}
 }
