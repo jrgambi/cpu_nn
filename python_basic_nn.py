@@ -1,3 +1,5 @@
+# from the deeplearning.ai coursera.org week 3 course work
+# will use numpy instead of the C nn I wrote before
 
 # coding: utf-8
 
@@ -20,6 +22,7 @@
 # - [matplotlib](http://matplotlib.org) is a library for plotting graphs in Python.
 # - testCases provides some test examples to assess the correctness of your functions
 # - planar_utils provide various useful functions used in this assignment
+
 
 # In[83]:
 
