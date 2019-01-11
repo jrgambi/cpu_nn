@@ -1,9 +1,6 @@
 # deeplearning.ai coursera course #1 week 4 course work has major influence on this code
 import numpy as np
 
-def test():
-    print ('test..\n')
-
 def initialize_parameters_deep(layer_dims):
     """
     Arguments:
