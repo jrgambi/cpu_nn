@@ -1,8 +1,9 @@
 #TODO: dataset manages dataset used in neural network
 import numpy as np
 
-dataset = [] # tuple of inputs, outputs
 MAX = 10000
+dataset = []# tuple of inputs, outputs
+
 
 def load_dataset():
 	# memory, maintains one and makes a copy for neuralnet to train with
@@ -12,9 +13,9 @@ def load_dataset():
 
 def append_data(data):
 	# check data is correct size
-	while (dataset.shape[1] >= (MAX - data.shape[1]):
-	   dataset = np.remove(dataset, 0, 0))
-	np.append(dataset, data)
-	#print 'append data\n'
+	while (dataset and dataset.len > (MAX - data.len)):
+	   del dataset[0]
+	dataset.append(data)
+	print 'append: ' + str(data) + '\n' 
 
-# file system stuff
+	# file system stuff
