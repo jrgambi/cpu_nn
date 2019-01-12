@@ -17,17 +17,30 @@ def dataset():
 		#update dataset
 		data = request.json
 		print '/dataset POST received ' + str(data['dataset'])
-		if be.validate_data(data):
-			print 'valid '
-		else:
-			print 'invalid '
-	return 'data\n'
+		response = be.process_data(data)
+		return str(response)
+	else:
+		return str(be.dataset)
 
-@app.route('/neuralnet', methods=['GET', 'PUT'])
+@app.route('/neuralnet', methods=['GET', 'PUT', 'POST'])
 def neuralnet():
 	if request.method == 'PUT':
 		# modify neural network
 		print '/neuralnet PUT received'
+
+	if request.method == 'POST':
+		#start/stop # TODO: base action on POST data
+		action = request.json['action']
+		# actions: start, stop, continue
+		if action == 'start':
+			be.train = True
+			be.start_training()
+		elif action == 'stop':
+			be.train = False
+		else:
+			# no valid action posted
+			return 'inaction is :(\n'
+
 	return 'nn\n'
 
 if __name__ == '__main__':
