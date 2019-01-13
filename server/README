@@ -1,2 +1,9 @@
 server listens for POSTS from client(s).  these posts are used to maintain a dataset that the server uses to train a neural network.
 server can also have hyper-parameters modified by PUTS
+
+example curls:
+// start training
+curl -X POST 127.0.0.1:5002/neuralnet --header "Content-Type: application/json" --data '{"action":"start"}'
+nn
+// post training data
+curl -X POST 127.0.0.1:5002/dataset --header "Content-Type: application/json" --data '{"dataset":{"inputs":[3, 2], "outputs":[0.3, 0.7]}}'
