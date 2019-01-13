@@ -1,10 +1,12 @@
 README
 
-To install, 
+To install C code, 
 `make` needs platform specific code in my_cpu.c.
 `make test` compiles tests not depended on platform
 
 ARMv8-a running in 32-bit mode is what has been implemmented.
+
+Python uses v2.7, I think just needs flask and NumPY
 
 The main goal of this project is for me to learn.  Also, to generate a properly weighted Neural Network that can be predict the change to the cpu's registers for a subset of any given instruction.  That subset currently excludes Load and Store single value or memory block.  
 
