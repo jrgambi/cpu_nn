@@ -1,0 +1,2 @@
+client generates data then POSTS it to server.  send data in batches 
+use PUTS to modify client
