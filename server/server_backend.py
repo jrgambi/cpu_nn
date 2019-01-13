@@ -5,46 +5,59 @@ class Backend():
 
 	# Hyper parameters
 	dataset = []
-	n_x = 2
-	n_h = 5 # tuple of hidden layers with number of perceptrons
-	n_y = 2
-	learning_rate = 0.9
-	iterations = 10 # for each dataset
+	
+	layer_dims = [3, 5, 5, 5, 5, 5, 3] # list
+	learning_rate = 1.9
+	iterations = 10000 # for each dataset
 	train = True
-	max_dataset_size = 10000
+	max_dataset_size = 1000
+	#activation = "relu" 
+	#activation = "sigmoid"
+	activation = "tanh"
 
 	# separate process
 	def start_training(self):
-		
+
+		np.random.seed()
+	
 		# init nn
-		layer_dims = [self.n_x, self.n_h, self.n_y] # list
-		parameters = initialize_parameters_deep(layer_dims)
-		
+		parameters = initialize_parameters_deep(self.layer_dims)
+		print ('starting params = ' + str(parameters) + '\n')
 		while self.train:
 			# copy dataset into numpy values
 			#X = np.array([x for x,_ in self.dataset])
 			#print 'X: ' + str(X) + '\n'
 			#Y = np.array([y for _,y in self.dataset])
 			#print 'Y: ' + str(Y) + '\n'
-			X = np.array([[2, 3], [4,9]]).T
-			Y = np.array([[0.3, 0.7],[0.4, 0.1]]).T
-			print ('X.shape = ' + str(X.shape) + ' ... Y.shape = ' + str(Y.shape) + '\n')
+			(X, Y) = self.generate_data()
+			#print ('X.shape = ' + str(X.shape) + ' ... Y.shape = ' + str(Y.shape) + '\n')
 			self.train = False
 
 			for i in range(0, self.iterations):
-				AL, caches = L_model_forward(X, parameters, "sigmoid")
+				AL, caches = L_model_forward(X, parameters, self.activation)
 
-				cost = compute_cost(AL, Y)
+				#print ('X = ' + str(X) + '\n')
+				#print ('AL = ' + str(AL) + '\n')
+				#print ('Y = ' + str(Y) + '\n')
 
-				grads = L_model_backward(AL, Y, caches, "sigmoid")
+				grads = L_model_backward(AL, Y, caches, self.activation)
 				#print ('grads = ' + str(grads) + '\n')
 
 				parameters = update_parameters(parameters, grads, self.learning_rate)
 				#print ('params = ' + str(parameters) + '\n')
 
-				if i % 1000: #(i + 1) == self.iterations:
+				if i % 1000 == 0: #(i + 1) == self.iterations:
+					cost = compute_cost(AL, Y)
 					print 'cost = ' + str(cost) + '\n'
+					#p = predict(parameters, X, self.activation)
+					#print ('prediction = ' + str(p) + '\n')
 
+		X = np.random.randn(3,1) *0.01
+		Y = np.sin(X * np.pi)
+		AL, caches = L_model_forward(X, parameters, self.activation)
+		print ('X = ' + str(X) + '\n')
+		print ('Y = ' + str(Y) + '\n')
+		print ('AL = ' + str(AL) + '\n')
 
 	def process_data(self, data):
 		# dataset input: [i0, i1 ... miN_X] # m is number of training examples 
@@ -71,3 +84,9 @@ class Backend():
 			self.dataset.append((X, Y))
 
 		return True
+
+	def generate_data(self):
+		# generates training data using sin(x)s.  
+		X = np.random.randn(3, 1000) * 0.01
+		Y = np.sin(X * np.pi)
+		return (X, Y)

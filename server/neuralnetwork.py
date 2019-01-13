@@ -43,7 +43,11 @@ def linear_forward(A, W, b):
     
     #print ("Wshape = " + str(W.shape))
     Z = np.dot(W, A) + b
-    
+
+    #print ('linear A = ' + str(A) + '\n')
+    #print ('Linear W = ' + str(W) + '\n')
+    #print ('linear Z = ' + str(Z) + '\n')
+
     assert(Z.shape == (W.shape[0], A.shape[1]))
     cache = (A, W, b)
     
@@ -74,6 +78,12 @@ def linear_activation_forward(A_prev, W, b, activation):
         # Inputs: "A_prev, W, b". Outputs: "A, activation_cache".
         Z, linear_cache = linear_forward(A_prev, W, b)
         A, activation_cache = relu (Z)
+    elif activation == "tanh":
+        Z, linear_cache = linear_forward(A_prev, W, b)
+        A, activation_cache = tanh (Z)
+    else: # Linear
+        A, linear_cache = linear_forward(A_prev, W, b)
+        activation_cache = {"Z":A, "A":A}
     
     assert (A.shape == (W.shape[0], A_prev.shape[1]))
     cache = (linear_cache, activation_cache)
@@ -105,9 +115,10 @@ def L_model_forward(X, parameters, activation_function="relu"):
         A, cache = linear_activation_forward(A_prev, parameters["W"+str(l)], parameters["b"+str(l)], activation_function)
         caches.append(cache)
     #print 'actL = ' + str(A) + '\n'
-    # Implement LINEAR -> SIGMOID. Add "cache" to the "caches" list.
     AL, cache = linear_activation_forward(A, parameters["W"+str(L)], parameters["b"+str(L)], activation_function)
     caches.append(cache)
+
+    #AL = np.nan_to_num (AL)
 
     #print ('AL.shape = ' + str(AL.shape))    
     #assert(AL.shape == (1,X.shape[1]))
@@ -131,6 +142,11 @@ def compute_cost(AL, Y):
     # Compute loss from aL and y.
     cost = (-1 / m) * np.sum (np.dot(Y, np.log(AL).T) + np.dot((1 - Y), np.log(1 - AL).T))
     
+    #print ('ccom AL = ' + str(AL) + '\n')
+    logprobs = np.multiply(np.log(AL), Y)
+    logprobs = np.nan_to_num(logprobs)
+    cost = -1 * np.sum(logprobs)
+
     cost = np.squeeze(cost)      # To make sure your cost's shape is what we expect (e.g. this turns [[17]] into 17).
     assert(cost.shape == ())
     
@@ -152,11 +168,17 @@ def linear_backward(dZ, cache):
     A_prev, W, b = cache
     m = A_prev.shape[1]
 
-    dW = (1 / m) * np.dot(dZ, cache[0].T)
+    dW = (1 / m) * np.dot(dZ, A_prev.T)
     db = (1 / m) * np.sum(dZ, axis=1, keepdims=True)
-    dA_prev = np.dot(cache[1].T, dZ)
-    
-    print ('dZ = ' + str(dZ) + '\n')
+    dA_prev = np.dot(W.T, dZ)    
+
+    dW = dW + np.copysign(0.00001, dW)
+    db = db + np.copysign(0.00001, db)
+
+    #print ('dZ = ' + str(dZ) + '\n')
+    #print ('A_prev = ' + str(A_prev.T) + '\n')
+    #print ('dW = ' + str(dW) + '\n')
+
     assert (dA_prev.shape == A_prev.shape)
     assert (dW.shape == W.shape)
     assert (db.shape == b.shape)
@@ -186,6 +208,13 @@ def linear_activation_backward(dA, cache, activation):
     elif activation == "sigmoid":
         dZ = sigmoid_backward(dA, activation_cache)
         dA_prev, dW, db = linear_backward(dZ, linear_cache)
+
+    elif activation == "tanh":
+        dZ = tanh_backward(dA, activation_cache)
+        dA_prev, dW, db = linear_backward(dZ, linear_cache)
+
+    else:
+        dA_prev, dW, db = linear_backwards(1, linear_cache)
     
     return dA_prev, dW, db
 
@@ -212,6 +241,7 @@ def L_model_backward(AL, Y, caches, activation_function="relu"):
     Y = Y.reshape(AL.shape) # after this line, Y is the same shape as AL
     
     # Initializing the backpropagation
+    AL = np.nan_to_num(AL) + np.copysign(0.001, AL)
     dAL = - (np.divide(Y, AL) - np.divide(1 - Y, 1 - AL))
     
     # Lth layer (SIGMOID -> LINEAR) gradients. Inputs: "dAL, current_cache". Outputs: "grads["dAL-1"], grads["dWL"], grads["dbL"]
@@ -248,25 +278,44 @@ def update_parameters(parameters, grads, learning_rate):
 
     # Update rule for each parameter. Use a for loop.
     for l in range(L):
-        parameters["W" + str(l+1)] = parameters["W" + str(l+1)] - grads["dW" + str(l+1)] * learning_rate
-        parameters["b" + str(l+1)] = parameters["b" + str(l+1)] - grads["db" + str(l+1)] * learning_rate
+        parameters["W" + str(l+1)] = parameters["W" + str(l+1)] - (grads["dW" + str(l+1)] * learning_rate)
+        parameters["b" + str(l+1)] = parameters["b" + str(l+1)] - (grads["db" + str(l+1)] * learning_rate)
+        
+    #print ('parameters = ' + str(parameters) + '\n')
     return parameters
 
 def sigmoid(Z):
     # 1 / (1 + (e ^ -Z))
-    activation_cache = {"Z":Z}
-    return (1 / (1 + np.exp(-1 * Z)), activation_cache)
+    A = (1 / (1 + np.exp (-Z)))
+    activation_cache = {"Z":Z, "A":A}
+    return (A , activation_cache)
 
 def relu(Z):
     # max(0,Z)
-    activation_cache = {"Z":Z}
-    return (np.maximum(Z, 0.0), activation_cache)
+    A = np.where (Z > 0, Z, 0.0)
+    activation_cache = {"Z":Z, "A":A}
+    #print ('relu dA = ' + str(A) + '\n')
+    return (A, activation_cache)
+
+def tanh(Z):
+    A = (2 / (1 + np.exp(-2 * Z))) - 1
+    activation_cache = {"Z":Z, "A":A}
+    #print ('A = ' + str(A) + ' ... Z = ' + str(Z) + '\n')
+    return (A, activation_cache)
 
 def sigmoid_backward(dA, activation_cache):
     # dZ = dA * g'(Z)
     Z = activation_cache["Z"]
-    return dA * (np.exp(Z) / (np.square(np.exp(Z) + 1)))
+    A = activation_cache["A"]
+    dZ = np.multiply(dA, (A * (1 - A)))
+    return dZ
 
 def relu_backward(dA, activation_cache):
     Z = activation_cache["Z"]
-    return dA * np.where(Z > 0.0, 1.0, 0.0)
+    dZ = np.where (Z > 0, 1.0, 0.0)
+    return dA * dZ
+
+def tanh_backward(dA, activation_cache):
+    A = activation_cache["A"]
+    dZ = dA * (1 - np.power(A, 2))
+    return dZ
