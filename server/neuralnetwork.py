@@ -90,7 +90,7 @@ def linear_activation_forward(A_prev, W, b, activation):
 
     return A, cache
 
-def L_model_forward(X, parameters, activation_function="relu"):
+def L_model_forward(X, parameters, activation_functions):
     """
     Implement forward propagation for the [LINEAR->RELU]*(L-1)->LINEAR->SIGMOID computation
     
@@ -112,10 +112,10 @@ def L_model_forward(X, parameters, activation_function="relu"):
     for l in range(1, L):
         A_prev = A 
         #print 'act = ' + str(A) + '\n'
-        A, cache = linear_activation_forward(A_prev, parameters["W"+str(l)], parameters["b"+str(l)], activation_function)
+        A, cache = linear_activation_forward(A_prev, parameters["W"+str(l)], parameters["b"+str(l)], activation_functions[l])
         caches.append(cache)
     #print 'actL = ' + str(A) + '\n'
-    AL, cache = linear_activation_forward(A, parameters["W"+str(L)], parameters["b"+str(L)], activation_function)
+    AL, cache = linear_activation_forward(A, parameters["W"+str(L)], parameters["b"+str(L)], activation_functions[L])
     caches.append(cache)
 
     #AL = np.nan_to_num (AL)
@@ -218,7 +218,7 @@ def linear_activation_backward(dA, cache, activation):
     
     return dA_prev, dW, db
 
-def L_model_backward(AL, Y, caches, activation_function="relu"):
+def L_model_backward(AL, Y, caches, activation_functions):
     """
     Implement the backward propagation for the [LINEAR->RELU] * (L-1) -> LINEAR -> SIGMOID group
     
@@ -246,14 +246,14 @@ def L_model_backward(AL, Y, caches, activation_function="relu"):
     
     # Lth layer (SIGMOID -> LINEAR) gradients. Inputs: "dAL, current_cache". Outputs: "grads["dAL-1"], grads["dWL"], grads["dbL"]
     current_cache = caches[L-1]
-    grads["dA" + str(L-1)], grads["dW" + str(L)], grads["db" + str(L)] = linear_activation_backward(dAL, current_cache, activation_function)
+    grads["dA" + str(L-1)], grads["dW" + str(L)], grads["db" + str(L)] = linear_activation_backward(dAL, current_cache, activation_functions[L])
     
     # Loop from l=L-2 to l=0
     for l in reversed(range(L-1)):
         # lth layer: (RELU -> LINEAR) gradients.
         # Inputs: "grads["dA" + str(l + 1)], current_cache". Outputs: "grads["dA" + str(l)] , grads["dW" + str(l + 1)] , grads["db" + str(l + 1)] 
         current_cache = caches[l]
-        dA_prev_temp, dW_temp, db_temp = linear_activation_backward(grads["dA" + str(l + 1)], current_cache, activation_function)
+        dA_prev_temp, dW_temp, db_temp = linear_activation_backward(grads["dA" + str(l + 1)], current_cache, activation_function[l])
         grads["dA" + str(l)] = dA_prev_temp
         grads["dW" + str(l + 1)] = dW_temp
         grads["db" + str(l + 1)] = db_temp

@@ -16,8 +16,8 @@ def dataset():
 	if request.method == 'POST':
 		#update dataset
 		data = request.json
-		print '/dataset POST received ' + str(data['dataset'])
-		response = be.process_data(data)
+		print '/dataset POST received: ' + str(data)
+		response = be.process_dataset(data)
 		return response
 	else:
 		return Response(status=200)
@@ -26,8 +26,10 @@ def dataset():
 def neuralnet():
 	if request.method == 'PUT':
 		# modify neural network
-		print '/neuralnet PUT received'
-		return Response(status=202)
+		data = request.json
+		print '/neuralnet PUT received: ' + str(data)
+		response = be.modify_neuralnet(data)
+		return response
 
 	if request.method == 'POST':
 		#start/stop # TODO: base action on POST data
