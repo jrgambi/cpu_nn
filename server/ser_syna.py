@@ -1,6 +1,6 @@
-from flask import Flask, request
+from flask import Flask, request, Response
 from flask_restful import Resource, Api
-from server_backend import *
+from syna import *
 
 app = Flask(__name__)
 api = Api(app)
@@ -9,7 +9,7 @@ be = Backend()
 
 @app.route('/health', methods=['GET'])
 def health():
-	return 'OK\n'
+	return Response('OK', 200) # 
 
 @app.route('/dataset', methods=['GET', 'POST'])
 def dataset():
@@ -18,15 +18,16 @@ def dataset():
 		data = request.json
 		print '/dataset POST received ' + str(data['dataset'])
 		response = be.process_data(data)
-		return str(response)
+		return response
 	else:
-		return str(be.dataset)
+		return Response(status=200)
 
 @app.route('/neuralnet', methods=['GET', 'PUT', 'POST'])
 def neuralnet():
 	if request.method == 'PUT':
 		# modify neural network
 		print '/neuralnet PUT received'
+		return Response(status=202)
 
 	if request.method == 'POST':
 		#start/stop # TODO: base action on POST data
@@ -39,7 +40,7 @@ def neuralnet():
 			be.train = False
 		else:
 			# no valid action posted
-			return 'inaction is :(\n'
+			return Response(status=200)
 
 	return 'nn\n'
 

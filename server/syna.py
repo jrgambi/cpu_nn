@@ -1,4 +1,5 @@
 import numpy as np
+from flask import Response
 from neuralnetwork import *
 
 class Backend():
@@ -69,18 +70,18 @@ class Backend():
 		outputs= data['dataset']['outputs']
 		#print 'in = ' + str(inputs) + ' ... out = ' + str(outputs) + '\n'
 
-		if (len(inputs) % self.n_x != 0 or len(outputs) % self.n_y != 0):
-			return False # TODO: more info to send REST response
+		if (len(inputs) % self.layer_dims[0] != 0 or len(outputs) % self.layer_dims[len(self.layer_dims)] != 0):
+			return Response('data inputs or outputs mismatch...\n', 400) # TODO: more info to send REST response
 
-		if (len(inputs) / self.n_x != len(outputs) / self.n_y):
+		if (len(inputs) / self.layer_dims[0] != len(outputs) / self.layer_dims[len(self.layer_dims)]):
 			return False # TODO: more info response
 
 		while len(self.dataset) >= self.max_dataset_size:
 			del self.dataset[0]
 
-		for i in range(0, (len(inputs) / self.n_x)):
-			X = inputs[(i * self.n_x):((i + 1) * self.n_x)]
-			Y = outputs[(i * self.n_y):((i + 1) * self.n_y)]
+		for i in range(0, (len(inputs) / self.layer_dims[0])):
+			X = inputs[(i * self.layer_dims[0]):((i + 1) * self.layer_dims[0])]
+			Y = outputs[(i * self.layer_dims[len(self.layer_dims)]):((i + 1) * self.layer_dims[len(self.layer_dims)])]
 			self.dataset.append((X, Y))
 
 		return True
