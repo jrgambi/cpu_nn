@@ -1,19 +1,13 @@
 README
 
-To install C code, 
-`make` needs platform specific code in my_cpu.c.
-`make test` compiles tests not depended on platform
+old C code contains cpu specific code as well as an attempt at implementing a neural network. platform contains cpu code as well.
 
-ARMv8-a running in 32-bit mode is what has been implemmented.
+Python uses v2.7, I think just needs flask and NumPY.  (nose)tests for testing that
 
-Python uses v2.7, I think just needs flask and NumPY.  (nose)tests for testing
+server contains REST API server for handling dataset and neural network hyper parameters.  Data is passed as json.
 
-The main goal of this project is for me to learn.  Also, to generate a properly weighted Neural Network that can be predict the change to the cpu's registers for a subset of any given instruction.  That subset currently excludes Load and Store single value or memory block.  
-
-There are three parts of code, the neural network, the cpu stuff, and the main (cpu_nn.c) that uses the first two parts.  
-The neural network should be able to handle multiple different algorithmns with hopefully just a minor amount of refactoring, but currently only has my attempt at gradient descent implemented.
-The cpu portion handles data generation; starting register values, instruction to execute, generates a function with the given instruction and output location to write to, and finally excutes that function.
-The main (cpu_nn.c) contains a barebones implemtation to generate data and train a neural network.  
-
-NOTES:
-It appears to work, but there are cpu exceptions that get generated including prefetch aborts and alignment issues.  Since my main goal was to learn machine learning concepts I skipped that issue for now.
+TODO:
+authentication
+saving generated neural network
+client code to send dataset
+front end
