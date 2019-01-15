@@ -19,8 +19,10 @@ def dataset():
 		print '/dataset POST received: ' + str(data)
 		response = be.process_dataset(data)
 		return response
-	else:
-		return Response(status=200)
+	elif request.method == 'GET':
+		return be.get_dataset()
+
+	return Response('Error: invalid request', 400)
 
 @app.route('/neuralnet', methods=['GET', 'PUT', 'POST'])
 def neuralnet():
@@ -31,7 +33,7 @@ def neuralnet():
 		response = be.modify_neuralnet(data)
 		return response
 
-	if request.method == 'POST':
+	elif request.method == 'POST': #TODO: async post handler
 		#start/stop # TODO: base action on POST data
 		action = request.json['action']
 		# actions: start, stop, continue
@@ -40,11 +42,13 @@ def neuralnet():
 			be.start_training()
 		elif action == 'stop':
 			be.train = False
-		else:
-			# no valid action posted
-			return Response(status=200)
+		# no valid action posted
+		return Response(status=200)
 
-	return 'nn\n'
+	elif request.method == 'GET':
+		return be.get_neuralnet()
+
+	return Response('Error: invalid request', 400)
 
 if __name__ == '__main__':
 	app.run(port='5002')
