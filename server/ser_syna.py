@@ -16,7 +16,7 @@ def dataset():
 	if request.method == 'POST':
 		#update dataset
 		data = request.json
-		print '/dataset POST received: ' + str(data)
+		#print '/dataset POST received: ' + str(data)
 		response = be.process_dataset(data)
 		return response
 	elif request.method == 'GET':
@@ -29,7 +29,7 @@ def neuralnet():
 	if request.method == 'PUT':
 		# modify neural network
 		data = request.json
-		print '/neuralnet PUT received: ' + str(data)
+		#print '/neuralnet PUT received: ' + str(data)
 		response = be.modify_neuralnet(data)
 		return response
 

@@ -2,7 +2,7 @@ README
 
 old C code contains cpu specific code as well as an attempt at implementing a neural network. platform contains cpu code as well.
 
-Python uses v2.7, I think just needs flask and NumPY.  (nose)tests for testing that
+Python needs >3.+, I think just needs flask and NumPY.  (nose)tests for testing that
 
 server contains REST API server for handling dataset and neural network hyper parameters.  Data is passed as json.
 

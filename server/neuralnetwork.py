@@ -17,8 +17,8 @@ def initialize_parameters_deep(layer_dims):
     L = len(layer_dims)            # number of layers in the network
 
     for l in range(1, L):
-        parameters['W' + str(l)] = np.random.randn(layer_dims[l], layer_dims[l-1]) * 0.01
-        parameters['b' + str(l)] = np.zeros((layer_dims[l], 1))
+        parameters['W' + str(l)] = np.random.randn(layer_dims[l], layer_dims[l-1]) #* 0.01
+        parameters['b' + str(l)] = np.zeros((layer_dims[l], 1), dtype=np.float64)
         
         assert(parameters['W' + str(l)].shape == (layer_dims[l], layer_dims[l-1]))
         assert(parameters['b' + str(l)].shape == (layer_dims[l], 1))
@@ -120,7 +120,7 @@ def L_model_forward(X, parameters, activation_functions):
 
     #AL = np.nan_to_num (AL)
 
-    #print ('AL.shape = ' + str(AL.shape))    
+    #print ('AL = ' + str(AL))    
     #assert(AL.shape == (1,X.shape[1]))
             
     return AL, caches
@@ -140,7 +140,7 @@ def compute_cost(AL, Y):
     m = Y.shape[1]
 
     # Compute loss from aL and y.
-    cost = (-1 / m) * np.sum (np.dot(Y, np.log(AL).T) + np.dot((1 - Y), np.log(1 - AL).T))
+    #cost = (-1 / m) * np.sum (np.dot(Y, np.log(AL).T) + np.dot((1 - Y), np.log(1 - AL).T))
     
     #print ('ccom AL = ' + str(AL) + '\n')
     logprobs = np.multiply(np.log(AL), Y)
@@ -171,9 +171,6 @@ def linear_backward(dZ, cache):
     dW = (1 / m) * np.dot(dZ, A_prev.T)
     db = (1 / m) * np.sum(dZ, axis=1, keepdims=True)
     dA_prev = np.dot(W.T, dZ)    
-
-    dW = dW + np.copysign(0.00001, dW)
-    db = db + np.copysign(0.00001, db)
 
     #print ('dZ = ' + str(dZ) + '\n')
     #print ('A_prev = ' + str(A_prev.T) + '\n')
@@ -241,19 +238,18 @@ def L_model_backward(AL, Y, caches, activation_functions):
     Y = Y.reshape(AL.shape) # after this line, Y is the same shape as AL
     
     # Initializing the backpropagation
-    AL = np.nan_to_num(AL) + np.copysign(0.001, AL)
-    dAL = - (np.divide(Y, AL) - np.divide(1 - Y, 1 - AL))
+    dAL = (-1 * np.divide(Y, AL)) + (np.divide(1 - Y, 1 - AL)) # sigmoid only?
     
     # Lth layer (SIGMOID -> LINEAR) gradients. Inputs: "dAL, current_cache". Outputs: "grads["dAL-1"], grads["dWL"], grads["dbL"]
     current_cache = caches[L-1]
-    grads["dA" + str(L-1)], grads["dW" + str(L)], grads["db" + str(L)] = linear_activation_backward(dAL, current_cache, activation_functions[L])
+    grads["dA" + str(L-1)], grads["dW" + str(L)], grads["db" + str(L)] = linear_activation_backward(dAL, current_cache, activation_functions[L-1])
     
     # Loop from l=L-2 to l=0
     for l in reversed(range(L-1)):
         # lth layer: (RELU -> LINEAR) gradients.
         # Inputs: "grads["dA" + str(l + 1)], current_cache". Outputs: "grads["dA" + str(l)] , grads["dW" + str(l + 1)] , grads["db" + str(l + 1)] 
         current_cache = caches[l]
-        dA_prev_temp, dW_temp, db_temp = linear_activation_backward(grads["dA" + str(l + 1)], current_cache, activation_function[l])
+        dA_prev_temp, dW_temp, db_temp = linear_activation_backward(grads["dA" + str(l + 1)], current_cache, activation_functions[l])
         grads["dA" + str(l)] = dA_prev_temp
         grads["dW" + str(l + 1)] = dW_temp
         grads["db" + str(l + 1)] = db_temp

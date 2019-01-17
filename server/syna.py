@@ -8,14 +8,14 @@ class Backend():
 	# Hyper parameters
 	dataset = []
 	
-	layer_dims = [3, 5, 5, 5, 5, 5, 3] # list
-	learning_rate = 1.9
+	layer_dims = [3, 5, 5, 5, 3] # list
+	learning_rate = 0.7
 	iterations = 10000 # for each dataset
 	train = True
 	max_dataset_size = 1000
 	#activations = ['relu'] * len(layer_dims)
-	#activations = ['sigmoid'] * len(layer_dims)
-	activations = ['tanh'] * len(layer_dims)
+	activations = ['sigmoid'] * len(layer_dims)
+	#activations = ['tanh'] * len(layer_dims)
 
 	# separate process
 	def start_training(self):
@@ -24,14 +24,14 @@ class Backend():
 	
 		# init nn
 		parameters = initialize_parameters_deep(self.layer_dims)
-		print ('starting params = ' + str(parameters) + '\n')
+		#print ('starting params = ' + str(parameters) + '\n')
 		while self.train:
 			# copy dataset into numpy values
 			#X = np.array([x for x,_ in self.dataset])
 			#print 'X: ' + str(X) + '\n'
 			#Y = np.array([y for _,y in self.dataset])
 			#print 'Y: ' + str(Y) + '\n'
-			(X, Y) = self.generate_data()
+			(X, Y) = self.generate_test_data()
 			#print ('X.shape = ' + str(X.shape) + ' ... Y.shape = ' + str(Y.shape) + '\n')
 			self.train = False
 
@@ -50,11 +50,11 @@ class Backend():
 
 				if i % 1000 == 0: #(i + 1) == self.iterations:
 					cost = compute_cost(AL, Y)
-					print 'cost = ' + str(cost) + '\n'
+					print ('cost = ' + str(cost) + '\n')
 					#p = predict(parameters, X, self.activation)
 					#print ('prediction = ' + str(p) + '\n')
 
-		X = np.random.randn(3,1) *0.01
+		X = np.random.rand(3,1) #* 0.01
 		Y = np.sin(X * np.pi)
 		AL, caches = L_model_forward(X, parameters, self.activations)
 		print ('X = ' + str(X) + '\n')
@@ -169,6 +169,6 @@ class Backend():
 
 	def generate_test_data(self):
 		# generates training data using sin(x)s.  
-		X = np.random.randn(3, 1000) * 0.01
+		X = np.random.rand(3, 100)# * 0.01
 		Y = np.sin(X * np.pi)
 		return (X, Y)

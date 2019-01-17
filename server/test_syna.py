@@ -39,12 +39,15 @@ class TestSyna(unittest.TestCase):
 		jr = response.json()
 		self.assertEqual(len(jr['neuralnet']['hyper_params']['layer_dims']), 4)
 
+		# TODO: more success, also does server retain changes?
+
 		response = requests.put(self.url + '/neuralnet', json=og_nn)
 		self.assertEquals(response.status_code, 202)
 
 		response = requests.get(self.url + '/neuralnet')
 		self.assertEqual(response.status_code, 200)
 		self.assertEquals(response.json(), og_nn)
+
 
 	def test_put_neuralnet_failure(self):
 		response = requests.get(self.url + '/neuralnet')
