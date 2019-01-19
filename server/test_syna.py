@@ -39,7 +39,7 @@ class TestSyna(unittest.TestCase):
 		jr = response.json()
 		self.assertEqual(len(jr['neuralnet']['hyper_params']['layer_dims']), 4)
 
-		# TODO: more success, also does server retain changes?
+		# TODO: more success
 
 		response = requests.put(self.url + '/neuralnet', json=og_nn)
 		self.assertEquals(response.status_code, 202)
@@ -60,5 +60,28 @@ class TestSyna(unittest.TestCase):
 		self.assertEqual(response.status_code, 200)
 		self.assertEquals(response.json(), og_nn)
 
+	
+	def test_post_dataset_success(self):
+		response = requests.get(self.url + '/dataset')
+		self.assertEqual(response.status_code, 200)
+		og_dataset = response.json # empty for now at least...
 
-	#def test_post_* # TODO:
+		# TODO: following
+		# post short dataset
+		# get dataset and assert
+		
+		# post some more to append
+		# get dataset and assert append and all is there
+
+		# post max
+		# get and assert
+
+		# restore dataset
+
+	def test_post_dataset_failure(self):
+		response = requests.get(self.url + '/dataset')
+		self.assertEqual(response.status_code, 200)
+		og_dataset = response.json
+
+		# post invalid values and assert errors
+		# TODO: add more detailed notes 

@@ -36,7 +36,7 @@ def neuralnet():
 	elif request.method == 'POST': #TODO: async post handler
 		#start/stop # TODO: base action on POST data
 		action = request.json['action']
-		# actions: start, stop, continue
+		# actions: start, stop, restart
 		if action == 'start':
 			be.train = True
 			be.start_training()

@@ -6,37 +6,37 @@ from neuralnetwork import *
 class Backend():
 
 	# Hyper parameters
-	dataset = []
+	dataset = [] # tuple of two numpy arrays of same length
 	
 	layer_dims = [3, 5, 5, 5, 3] # list
 	learning_rate = 0.7
 	iterations = 10000 # for each dataset
-	train = True
+	train = True 
+	dinit = False # = have parameters been initialized?
 	max_dataset_size = 1000
 	#activations = ['relu'] * len(layer_dims)
-	activations = ['sigmoid'] * len(layer_dims)
-	#activations = ['tanh'] * len(layer_dims)
+	#activations = ['sigmoid'] * len(layer_dims)
+	activations = ['tanh'] * len(layer_dims)
+	parameters = []
 
 	# separate process
-	def start_training(self):
+	def start_training(self, finit=False): # finit = force init
 
-		np.random.seed()
-	
-		# init nn
-		parameters = initialize_parameters_deep(self.layer_dims)
+		if finit or not self.dinit: # 
+			np.random.seed()
+			self.parameters = initialize_parameters_deep(self.layer_dims)
+			self.dinit = True
+
 		#print ('starting params = ' + str(parameters) + '\n')
 		while self.train:
 			# copy dataset into numpy values
-			#X = np.array([x for x,_ in self.dataset])
-			#print 'X: ' + str(X) + '\n'
-			#Y = np.array([y for _,y in self.dataset])
-			#print 'Y: ' + str(Y) + '\n'
-			(X, Y) = self.generate_test_data()
-			#print ('X.shape = ' + str(X.shape) + ' ... Y.shape = ' + str(Y.shape) + '\n')
+			self.dataset = self.generate_test_data()
+			(X, Y) = self.dataset
+
 			self.train = False
 
 			for i in range(0, self.iterations):
-				AL, caches = L_model_forward(X, parameters, self.activations)
+				AL, caches = L_model_forward(X, self.parameters, self.activations)
 
 				#print ('X = ' + str(X) + '\n')
 				#print ('AL = ' + str(AL) + '\n')
@@ -45,18 +45,19 @@ class Backend():
 				grads = L_model_backward(AL, Y, caches, self.activations)
 				#print ('grads = ' + str(grads) + '\n')
 
-				parameters = update_parameters(parameters, grads, self.learning_rate)
+				self.parameters = update_parameters(self.parameters, grads, self.learning_rate)
 				#print ('params = ' + str(parameters) + '\n')
 
 				if i % 1000 == 0: #(i + 1) == self.iterations:
 					cost = compute_cost(AL, Y)
 					print ('cost = ' + str(cost) + '\n')
+					
 					#p = predict(parameters, X, self.activation)
 					#print ('prediction = ' + str(p) + '\n')
 
 		X = np.random.rand(3,1) #* 0.01
 		Y = np.sin(X * np.pi)
-		AL, caches = L_model_forward(X, parameters, self.activations)
+		AL, caches = L_model_forward(X, self.parameters, self.activations)
 		print ('X = ' + str(X) + '\n')
 		print ('Y = ' + str(Y) + '\n')
 		print ('AL = ' + str(AL) + '\n')
@@ -68,7 +69,7 @@ class Backend():
 		#curl -X POST 127.0.0.1:5002/dataset --header "Content-Type: application/json" --data '{"dataset":{"inputs":["beep", "boop"], "outputs":["o1", "o2"]}}'
 	
 		inputs = data['dataset']['inputs']
-		outputs= data['dataset']['outputs']
+		outputs = data['dataset']['outputs']
 		#print 'in = ' + str(inputs) + ' ... out = ' + str(outputs) + '\n'
 
 		if (len(inputs) % self.layer_dims[0] != 0 or len(outputs) % self.layer_dims[len(self.layer_dims)] != 0):
@@ -78,12 +79,12 @@ class Backend():
 			return Response('Error:  number of inputs != number of outputs', 400)
 
 		while len(self.dataset) >= self.max_dataset_size:
-			del self.dataset[0]
+			del self.dataset[0] # FIXME: numpy switch needed?
 
 		for i in range(0, (len(inputs) / self.layer_dims[0])):
 			X = inputs[(i * self.layer_dims[0]):((i + 1) * self.layer_dims[0])]
 			Y = outputs[(i * self.layer_dims[len(self.layer_dims)]):((i + 1) * self.layer_dims[len(self.layer_dims)])]
-			self.dataset.append((X, Y))
+			self.dataset.append((X, Y)) # FIXME: numpy switch needed?
 
 		return Response('Sucess:  dataset processed', 200)
 
@@ -104,8 +105,12 @@ class Backend():
 			for i in layd:
 				if ((not isinstance(i, int)) or (i <= 0)):
 					return Response('Error: invalid value for layer_dims. ' + str(i), 404)
+			if ((layd[0] != self.layer_dims[0]) or (layd[len(layd) - 1] != self.layer_dims[len(self.layer_dims) - 1])):
+				self.dataset = [] # reset dataset
 			self.layer_dims = layd
 			resp += 'new layer_dims = ' + str(self.layer_dims) + '\n'
+			self.dinit = False # new dimensions require re-init
+			self.activations = [self.activations[0]] * len(self.layer_dims)
 
 		# iterations
 		if ('iterations' in data['neuralnet']['hyper_params']):
@@ -129,9 +134,9 @@ class Backend():
 			acts = data['neuralnet']['hyper_params']['activations']
 			
 			# FIXME: validate sizes and stuff.  needs work
-			#ldims = data['neuralnet']['hyper_params']['layer_dims']
-			#if ((len(acts) != 1) or (len(acts) != len(self.layer_dims)) or (len(acts) != len(ldims))):
-			#	return Response('Error: activations need to match up to layer_dims or just be 1 value', 407)
+			ldims = data['neuralnet']['hyper_params']['layer_dims']
+			if ((len(acts) != 1) and (len(acts) != len(self.layer_dims)) and (len(acts) != len(ldims))):
+				return Response('Error: activations need to match up to layer_dims or just be 1 value', 407)
 			#for (a in acts):
 			#	if (a != 'tanh' or a != 'linear' or a != 'sigmoid' or a != 'relu')
 			#		return Response('Error:  invalid activation provided ' + str(a), 400)

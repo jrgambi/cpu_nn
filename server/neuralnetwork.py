@@ -139,6 +139,8 @@ def compute_cost(AL, Y):
     
     m = Y.shape[1]
 
+    # TODO: is there a better cost function? dependent on activation function of output layer?
+
     # Compute loss from aL and y.
     #cost = (-1 / m) * np.sum (np.dot(Y, np.log(AL).T) + np.dot((1 - Y), np.log(1 - AL).T))
     
@@ -238,7 +240,8 @@ def L_model_backward(AL, Y, caches, activation_functions):
     Y = Y.reshape(AL.shape) # after this line, Y is the same shape as AL
     
     # Initializing the backpropagation
-    dAL = (-1 * np.divide(Y, AL)) + (np.divide(1 - Y, 1 - AL)) # sigmoid only?
+    #dAL = (-1 * np.divide(Y, AL)) + (np.divide(1 - Y, 1 - AL)) # sigmoid only?
+    dAL = AL - Y # tanh and sigmoid?
     
     # Lth layer (SIGMOID -> LINEAR) gradients. Inputs: "dAL, current_cache". Outputs: "grads["dAL-1"], grads["dWL"], grads["dbL"]
     current_cache = caches[L-1]
