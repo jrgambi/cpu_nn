@@ -1,3 +1,17 @@
+#This program is free software: you can redistribute it and/or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+#
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+#
+#You should have received a copy of the GNU General Public License
+#along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+
 import numpy as np
 from flask import Response
 import json
@@ -6,7 +20,7 @@ from neuralnetwork import *
 class Backend():
 
 	# Hyper parameters
-	dataset = [] # tuple of two numpy arrays of same length
+	dataset = ([],[]) # tuple of two numpy arrays of same length
 	
 	layer_dims = [3, 5, 5, 5, 3] # list
 	learning_rate = 0.7
@@ -62,29 +76,48 @@ class Backend():
 		print ('Y = ' + str(Y) + '\n')
 		print ('AL = ' + str(AL) + '\n')
 
+	# datasets has a many to one relation with neural network?  or 1-to-1?  
+	def get_dataset(self, guid=None): # TODO: use headers to specifiy/track current neural network
+		# nn_guid will eventually be required
+		(X, Y) = self.dataset
+		resp = {'dataset':{'inputs':X, 'outputs':Y}}
+		if guid is None:
+			return Response(json.dumps(resp), 200, mimetype='application/json')
+		else: # TODO: DB select using guid?
+			return Response(json.dumps(resp), 200, mimetype='application/json')
+
+
 	def process_dataset(self, data):
 		# dataset input: [i0, i1 ... miN_X] # m is number of training examples 
 		# dataset output [o0, o1 ... moN_Y]
 
-		#curl -X POST 127.0.0.1:5002/dataset --header "Content-Type: application/json" --data '{"dataset":{"inputs":["beep", "boop"], "outputs":["o1", "o2"]}}'
+		#curl -X POST 127.0.0.1:5002/dataset --header "Content-Type: application/json" --data 
+		#	'{"dataset":{"inputs":[[1,2,3], [4,5,6]], "outputs":[[6,5,4], [3,2,1]]}}'
+
+		# validate request
+		if 'dataset' not in data or 'inputs' not in data['dataset'] or 'outputs' not in data['dataset']:
+			return Response('Error: Request invalid', 400)
 	
 		inputs = data['dataset']['inputs']
 		outputs = data['dataset']['outputs']
-		#print 'in = ' + str(inputs) + ' ... out = ' + str(outputs) + '\n'
 
-		if (len(inputs) % self.layer_dims[0] != 0 or len(outputs) % self.layer_dims[len(self.layer_dims)] != 0):
-			return Response('Error:  data inputs or outputs mismatch...\n', 400)
+		if 'force_new' in data['dataset'] and data['dataset']['force_new']:
+			self.dataset = ([],[])
 
-		if (len(inputs) / self.layer_dims[0] != len(outputs) / self.layer_dims[len(self.layer_dims)]):
-			return Response('Error:  number of inputs != number of outputs', 400)
+		(X, Y) = self.dataset
 
-		while len(self.dataset) >= self.max_dataset_size:
-			del self.dataset[0] # FIXME: numpy switch needed?
+		# validate inputs and outputs
+		if len(inputs) != len(outputs):
+			return Response('Error: invalid data', 400)
 
-		for i in range(0, (len(inputs) / self.layer_dims[0])):
-			X = inputs[(i * self.layer_dims[0]):((i + 1) * self.layer_dims[0])]
-			Y = outputs[(i * self.layer_dims[len(self.layer_dims)]):((i + 1) * self.layer_dims[len(self.layer_dims)])]
-			self.dataset.append((X, Y)) # FIXME: numpy switch needed?
+		# append values to X and Y and update dataset
+		for i in range(0, len(inputs)):
+			if ((len(inputs[i]) != self.layer_dims[0]) or (len(outputs[i]) != self.layer_dims[len(self.layer_dims) - 1])):
+				return Response('Error: invalid data', 400)
+			X.append(inputs[i])
+			Y.append(outputs[i])
+
+		self.dataset = (X, Y)
 
 		return Response('Sucess:  dataset processed', 200)
 
@@ -123,7 +156,7 @@ class Backend():
 		# max_dataset_size
 		if('max_dataset_size' in data['neuralnet']['hyper_params']):
 			dset = data['neuralnet']['hyper_params']['max_dataset_size']
-			if ((not isinstance(iters, int)) or (iters <= 0)):
+			if ((not isinstance(dset, int)) or (dset <= 0)):
 				return Response('Error: invalid value for max data set size. ' + str(dset), 406)
 			self.max_dataset_size = dset
 			#self.dataset = [] # trim current dataset?
@@ -134,15 +167,14 @@ class Backend():
 			acts = data['neuralnet']['hyper_params']['activations']
 			
 			# FIXME: validate sizes and stuff.  needs work
-			ldims = data['neuralnet']['hyper_params']['layer_dims']
-			if ((len(acts) != 1) and (len(acts) != len(self.layer_dims)) and (len(acts) != len(ldims))):
+			if ((len(acts) != 1) and (len(acts) != len(self.layer_dims))):
 				return Response('Error: activations need to match up to layer_dims or just be 1 value', 407)
 			#for (a in acts):
 			#	if (a != 'tanh' or a != 'linear' or a != 'sigmoid' or a != 'relu')
 			#		return Response('Error:  invalid activation provided ' + str(a), 400)
 
 			if len(acts) == 1:
-				self.activations = [acts] * len(self.layer_dims)
+				self.activations = acts * len(self.layer_dims)
 			else:
 				self.activations = acts
 			resp += 'new activations = ' + str(self.activations) + '\n'
@@ -157,13 +189,6 @@ class Backend():
 
 		return Response('Success: neuralnet updated. ' + resp, 202)
 
-	# datasets has a many to one relation with neural network?  or 1-to-1?  
-	def get_dataset(self, guid=None): # TODO: use headers to specifiy/track current neural network
-		# nn_guid will eventually be required
-		if guid is None:
-			return Response(json.dumps(self.dataset), 200)
-		else: # TODO: DB select using guid?
-			return Response(json.dumps(self.dataset), 200)
 
 	def get_neuralnet(self, guid=None):
 		#if guid is None: # TODO: DB junk
