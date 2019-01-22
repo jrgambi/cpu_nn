@@ -31,7 +31,7 @@ def dataset():
 		#update dataset
 		data = request.json
 		#print '/dataset POST received: ' + str(data)
-		response = be.process_dataset(data)
+		response = be.handle_dataset(data)
 		return response
 	elif request.method == 'GET':
 		return be.get_dataset()
@@ -52,12 +52,12 @@ def neuralnet():
 		action = request.json['action']
 		# actions: start, stop, restart
 		if action == 'start':
-			be.train = True
-			be.start_training()
+			return be.start_training_thread()
 		elif action == 'stop':
 			be.train = False
+			return Response('training stop action received\n', 200)
 		# no valid action posted
-		return Response(status=200)
+		return Response('Error action not supported\n', status=400)
 
 	elif request.method == 'GET':
 		return be.get_neuralnet()

@@ -160,7 +160,7 @@ def compute_cost(AL, Y):
     #print ('ccom AL = ' + str(AL) + '\n')
     logprobs = np.multiply(np.log(AL), Y)
     logprobs = np.nan_to_num(logprobs)
-    cost = -1 * np.sum(logprobs)
+    cost = (-1 * np.sum(logprobs)) / m
 
     cost = np.squeeze(cost)      # To make sure your cost's shape is what we expect (e.g. this turns [[17]] into 17).
     assert(cost.shape == ())

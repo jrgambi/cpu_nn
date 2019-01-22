@@ -15,6 +15,7 @@
 import numpy as np
 from flask import Response
 import json
+import threading
 from neuralnetwork import *
 
 class Backend():
@@ -25,9 +26,9 @@ class Backend():
 	layer_dims = [3, 5, 5, 5, 3] # list
 	learning_rate = 0.7
 	iterations = 10000 # for each dataset
-	train = True 
+	train = False
 	dinit = False # = have parameters been initialized?
-	max_dataset_size = 1000
+	max_dataset_size = 10000
 	#activations = ['relu'] * len(layer_dims)
 	#activations = ['sigmoid'] * len(layer_dims)
 	activations = ['tanh'] * len(layer_dims)
@@ -44,10 +45,10 @@ class Backend():
 		#print ('starting params = ' + str(parameters) + '\n')
 		while self.train:
 			# copy dataset into numpy values
-			self.dataset = self.generate_test_data()
+			self.dataset = self.generate_test_data() 
 			(X, Y) = self.dataset
 
-			self.train = False
+			#self.train = False
 
 			for i in range(0, self.iterations):
 				AL, caches = L_model_forward(X, self.parameters, self.activations)
@@ -68,13 +69,26 @@ class Backend():
 					
 					#p = predict(parameters, X, self.activation)
 					#print ('prediction = ' + str(p) + '\n')
+				if not self.train:
+					break
 
-		X = np.random.rand(3,1) #* 0.01
-		Y = np.sin(X * np.pi)
-		AL, caches = L_model_forward(X, self.parameters, self.activations)
-		print ('X = ' + str(X) + '\n')
-		print ('Y = ' + str(Y) + '\n')
-		print ('AL = ' + str(AL) + '\n')
+			# test value for generate_test_data
+			X = np.random.rand(3,1) #* 0.01
+			Y = np.sin(X * np.pi)
+			AL, caches = L_model_forward(X, self.parameters, self.activations)
+			print ('X = ' + str(X) + '\n')
+			print ('Y = ' + str(Y) + '\n')
+			print ('AL = ' + str(AL) + '\n')
+
+	def start_training_thread(self, finit=False):
+		if not self.train:
+			self.train = True
+			t1 = threading.Thread(target=self.start_training, args=(finit,))
+			t1.start()
+		else:
+			return Response('already start\n', 200)
+			
+		return Response('Process started\n', 200)
 
 	# datasets has a many to one relation with neural network?  or 1-to-1?  
 	def get_dataset(self, guid=None): # TODO: use headers to specifiy/track current neural network
@@ -87,7 +101,7 @@ class Backend():
 			return Response(json.dumps(resp), 200, mimetype='application/json')
 
 
-	def process_dataset(self, data):
+	def handle_dataset(self, data):
 		# dataset input: [i0, i1 ... miN_X] # m is number of training examples 
 		# dataset output [o0, o1 ... moN_Y]
 
@@ -199,6 +213,6 @@ class Backend():
 
 	def generate_test_data(self):
 		# generates training data using sin(x)s.  
-		X = np.random.rand(3, 100)# * 0.01
+		X = np.random.rand(3, self.max_dataset_size)# * 0.01
 		Y = np.sin(X * np.pi)
 		return (X, Y)
