@@ -20,19 +20,20 @@ from neuralnetwork import *
 
 class Backend():
 
-    # Hyper parameters
-    dataset = ([],[]) # tuple of two numpy arrays of same length
-    
-    layer_dims = [3, 5, 5, 5, 3] # list
-    learning_rate = 0.7
-    iterations = 10000 # for each dataset
-    train = False
-    dinit = False # = have parameters been initialized?
-    max_dataset_size = 10000
-    #activations = ['relu'] * len(layer_dims)
-    #activations = ['sigmoid'] * len(layer_dims)
-    activations = ['tanh'] * len(layer_dims)
-    parameters = []
+    def __init__(self):
+        # Hyper parameters
+        self.dataset = ([],[]) # tuple of two numpy arrays of same length
+        
+        self.layer_dims = [3, 5, 5, 5, 3] # list
+        self.learning_rate = 0.7
+        self.iterations = 10000 # for each dataset
+        self.train = False
+        self.dinit = False # = have parameters been initialized?
+        self.max_dataset_size = 10000
+        #self.activations = ['relu'] * len(self.layer_dims)
+        #selfactivations = ['sigmoid'] * len(self.layer_dims)
+        self.activations = ['tanh'] * len(self.layer_dims)
+        self.parameters = []
 
     # separate process
     def start_training(self, finit=False): # finit = force init
@@ -152,7 +153,7 @@ class Backend():
             for i in layd:
                 if ((not isinstance(i, int)) or (i <= 0)):
                     return Response('Error: invalid value for layer_dims. ' + str(i), 404)
-            if ((layd[0] != self.layer_dims[0]) or (layd[len(layd) - 1] != self.layer_dims[len(self.layer_dims) - 1])):
+            if ((layd[0] != self.layer_dims[0]) or (layd[-1] != self.layer_dims[-1])):
                 self.dataset = [] # reset dataset
             self.layer_dims = layd
             resp += 'new layer_dims = ' + str(self.layer_dims) + '\n'
