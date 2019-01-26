@@ -23,46 +23,46 @@ be = Backend()
 
 @app.route('/health', methods=['GET'])
 def health():
-	return Response('OK', 200) # 
+    return Response('OK', 200) # 
 
 @app.route('/dataset', methods=['GET', 'POST'])
 def dataset():
-	if request.method == 'POST':
-		#update dataset
-		data = request.json
-		#print '/dataset POST received: ' + str(data)
-		response = be.handle_dataset(data)
-		return response
-	elif request.method == 'GET':
-		return be.get_dataset()
+    if request.method == 'POST':
+        #update dataset
+        data = request.json
+        #print '/dataset POST received: ' + str(data)
+        response = be.handle_dataset(data)
+        return response
+    elif request.method == 'GET':
+        return be.get_dataset()
 
-	return Response('Error: invalid request', 400)
+    return Response('Error: invalid request', 400)
 
 @app.route('/neuralnet', methods=['GET', 'PUT', 'POST'])
 def neuralnet():
-	if request.method == 'PUT':
-		# modify neural network
-		data = request.json
-		#print '/neuralnet PUT received: ' + str(data)
-		response = be.modify_neuralnet(data)
-		return response
+    if request.method == 'PUT':
+        # modify neural network
+        data = request.json
+        #print '/neuralnet PUT received: ' + str(data)
+        response = be.modify_neuralnet(data)
+        return response
 
-	elif request.method == 'POST': #TODO: async post handler
-		#start/stop # TODO: base action on POST data
-		action = request.json['action']
-		# actions: start, stop, restart
-		if action == 'start':
-			return be.start_training_thread()
-		elif action == 'stop':
-			be.train = False
-			return Response('training stop action received\n', 200)
-		# no valid action posted
-		return Response('Error action not supported\n', status=400)
+    elif request.method == 'POST': #TODO: async post handler
+        #start/stop # TODO: base action on POST data
+        action = request.json['action']
+        # actions: start, stop, restart
+        if action == 'start':
+            return be.start_training_thread()
+        elif action == 'stop':
+            be.train = False
+            return Response('training stop action received\n', 200)
+        # no valid action posted
+        return Response('Error action not supported\n', status=400)
 
-	elif request.method == 'GET':
-		return be.get_neuralnet()
+    elif request.method == 'GET':
+        return be.get_neuralnet()
 
-	return Response('Error: invalid request', 400)
+    return Response('Error: invalid request', 400)
 
 if __name__ == '__main__':
-	app.run(port='5002')
+    app.run(port='5002')
