@@ -26,20 +26,20 @@ class Backend():
         
         self.layer_dims = [3, 5, 5, 5, 3] # list
         self.learning_rate = 0.7
-        self.iterations = 10000 # for each dataset
+        self.iterations = 1000 # for each dataset
         self.train = False
         self.dinit = False # = have parameters been initialized?
-        self.max_dataset_size = 10000
+        self.max_dataset_size = 1000
         #self.activations = ['relu'] * len(self.layer_dims)
-        #selfactivations = ['sigmoid'] * len(self.layer_dims)
+        #self.activations = ['sigmoid'] * len(self.layer_dims)
         self.activations = ['tanh'] * len(self.layer_dims)
         self.parameters = []
+        np.random.seed()
 
     # separate process
     def start_training(self, finit=False): # finit = force init
 
         if finit or not self.dinit: # 
-            np.random.seed()
             self.parameters = initialize_parameters_deep(self.layer_dims)
             self.dinit = True
 
@@ -51,7 +51,7 @@ class Backend():
 
             #self.train = False
 
-            for i in range(0, self.iterations):
+            for i in range(1, self.iterations):
                 AL, caches = L_model_forward(X, self.parameters, self.activations)
 
                 #print ('X = ' + str(X) + '\n')
@@ -64,7 +64,7 @@ class Backend():
                 self.parameters = update_parameters(self.parameters, grads, self.learning_rate)
                 #print ('params = ' + str(parameters) + '\n')
 
-                if i % 1000 == 0: #(i + 1) == self.iterations:
+                if i % 1000 == 0 or (i + 1) == self.iterations:
                     cost = compute_cost(AL, Y)
                     print ('cost = ' + str(cost) + '\n')
                     
@@ -201,6 +201,8 @@ class Backend():
                 return Response('Error: invalid value for iterations. ' + str(lrate), 408)
             self.learning_rate = lrate
             resp += 'new learning_rate = ' + str(lrate) + '\n'
+
+        self.train = False
 
         return Response('Success: neuralnet updated. ' + resp, 202)
 
