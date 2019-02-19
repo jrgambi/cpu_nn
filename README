@@ -7,7 +7,9 @@ Python needs >3.+, I think just needs flask, flask_restful and NumPY.  (nose)tes
 server contains REST API server for handling dataset and neural network hyper parameters.  Data is passed as json.
 
 TODO:
+graph database
 authentication
 saving generated neural network
 client code to send dataset
+dockerize
 front end
